@@ -10,6 +10,7 @@ describe("NFTMarket", function() {
     const nft = await NFT.deploy(marketAddress)
     await nft.deployed()
     const nftContractAddress = nft.address
+    const creater = "0x18b15eBD34b5a78622F5630525d46bf9F38e9830"
 
     let listingPrice = await market.getListingPrice()
     listingPrice = listingPrice.toString()
@@ -19,10 +20,11 @@ describe("NFTMarket", function() {
     await nft.createToken("https://www.clab.com")
     await nft.createToken("https://www.clab.com")
   
-    await market.createMarketItem(nftContractAddress, 1, auctionPrice, { value: listingPrice })
-    await market.createMarketItem(nftContractAddress, 2, auctionPrice, { value: listingPrice })
+    await market.createMarketItem(nftContractAddress, creater, 1, auctionPrice, { value: listingPrice })
+    await market.createMarketItem(nftContractAddress, creater, 2, auctionPrice, { value: listingPrice })
     
     const [_, buyerAddress] = await ethers.getSigners()
+    // console.log('buyerAddress   = ', buyerAddress)
 
     await market.connect(buyerAddress).createMarketSale(nftContractAddress, 1, { value: auctionPrice})
 
@@ -33,6 +35,7 @@ describe("NFTMarket", function() {
         price: i.price.toString(),
         tokenId: i.tokenId.toString(),
         seller: i.seller,
+        creater: i.creater,
         owner: i.owner,
         tokenUri
       }

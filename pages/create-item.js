@@ -7,7 +7,7 @@ import Web3Modal from 'web3modal'
 const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
 
 import {
-  nftaddress, nftmarketaddress
+  nftaddress, nftmarketaddress, creater
 } from '../config'
 
 import NFT from '../artifacts/contracts/ClabNFT.sol/ClabNFT.json'
@@ -72,11 +72,12 @@ export default function CreateItem() {
     
     listingPrice = listingPrice.toString()
 
-    transaction = await contract.createMarketItem(nftaddress, tokenId, price, { value: listingPrice })
+    transaction = await contract.createMarketItem(nftaddress, creater, tokenId, price, { value: listingPrice })
     await transaction.wait()
     router.push('/')
   }
 
+  
   return (
     <div className="flex justify-center">
       <div className="w-1/2 flex flex-col pb-12">

@@ -14,6 +14,8 @@ contract ClabMarket is ReentrancyGuard {
 
   address payable owner;
   uint256 listingPrice = 0.025 ether;
+  address payable contentCreater;
+  uint256 public _allowanceFee = 50;
 
   constructor() {
     owner = payable(msg.sender);
@@ -25,11 +27,17 @@ contract ClabMarket is ReentrancyGuard {
     uint256 tokenId;
     address payable seller;
     address payable owner;
+    address payable creater;    
     uint256 price;
     bool sold;
   }
 
   mapping(uint256 => MarketItem) private idToMarketItem;
+
+  modifier onlyOwner(){
+    require(owner == msg.sender, " Ownable: caller is not the owner");
+    _;
+  }
 
   event MarketItemCreated (
     uint indexed itemId,
@@ -37,6 +45,7 @@ contract ClabMarket is ReentrancyGuard {
     uint256 indexed tokenId,
     address seller,
     address owner,
+    address creater,
     uint256 price,
     bool sold
   );
@@ -49,6 +58,7 @@ contract ClabMarket is ReentrancyGuard {
   /* Places an item for sale on the marketplace */
   function createMarketItem(
     address nftContract,
+    address creater,
     uint256 tokenId,
     uint256 price
   ) public payable nonReentrant {
@@ -57,6 +67,7 @@ contract ClabMarket is ReentrancyGuard {
 
     _itemIds.increment();
     uint256 itemId = _itemIds.current();
+    contentCreater = payable(creater);
   
     idToMarketItem[itemId] =  MarketItem(
       itemId,
@@ -64,6 +75,7 @@ contract ClabMarket is ReentrancyGuard {
       tokenId,
       payable(msg.sender),
       payable(address(0)),
+      payable(creater),
       price,
       false
     );
@@ -76,6 +88,7 @@ contract ClabMarket is ReentrancyGuard {
       tokenId,
       msg.sender,
       address(0),
+      creater,
       price,
       false
     );
@@ -90,13 +103,19 @@ contract ClabMarket is ReentrancyGuard {
     uint price = idToMarketItem[itemId].price;
     uint tokenId = idToMarketItem[itemId].tokenId;
     require(msg.value == price, "Please submit the asking price in order to complete the purchase");
+    uint256 allowance = calculateAllowances(msg.value);
+    uint256 ownerAllowance = calculateOwnerAllowances(msg.value);    
 
-    idToMarketItem[itemId].seller.transfer(msg.value);
+    // idToMarketItem[itemId].seller.transfer(msg.value);
+    // idToMarketItem[itemId].creater.transfer(listingPrice);
+    idToMarketItem[itemId].seller.transfer(allowance);
+    idToMarketItem[itemId].creater.transfer(ownerAllowance);
     IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
     idToMarketItem[itemId].owner = payable(msg.sender);
     idToMarketItem[itemId].sold = true;
     _itemsSold.increment();
-    payable(owner).transfer(listingPrice);
+    // payable(owner).transfer(listingPrice);
+    // payable(contentCreater).transfer(listingPrice);
   }
 
   /* Returns all unsold market items */
@@ -163,5 +182,16 @@ contract ClabMarket is ReentrancyGuard {
       }
     }
     return items;
+  }
+  function calculateAllowances(uint256 _amount) private view returns (uint256){
+    return (_amount *_allowanceFee)/ (10**2);
+  }
+
+  function calculateOwnerAllowances(uint256 _amount) private view returns (uint256){
+    return (_amount *(100 - _allowanceFee))/ (10**2);
+  }
+
+  function setAllowancePercent(uint256 taxFee) external onlyOwner(){
+    _allowanceFee = taxFee;
   }
 }
