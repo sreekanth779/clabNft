@@ -58,7 +58,7 @@ export default function CreateItem() {
     
     /* next, create the item */
     let contract = new ethers.Contract(nftaddress, NFT.abi, signer)
-    let transaction = await contract.createToken(url)
+    let transaction = await contract.createToken(url, 5)
     let tx = await transaction.wait()
     let event = tx.events[0]
     let value = event.args[2]
@@ -72,7 +72,7 @@ export default function CreateItem() {
     
     listingPrice = listingPrice.toString()
 
-    transaction = await contract.createMarketItem(nftaddress, creater, tokenId, price, { value: listingPrice })
+    transaction = await contract.createMarketItem(nftaddress, creater, tokenId, price, 5, { value: listingPrice })
     await transaction.wait()
     router.push('/')
   }

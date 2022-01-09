@@ -16,13 +16,18 @@ contract ClabNFT is ERC721URIStorage {
         contractAddress = marketplaceAddress;
     }
 
-    function createToken(string memory tokenURI) public returns (uint) {
-        _tokenIds.increment();
-        uint256 newItemId = _tokenIds.current();
+  function createToken(string memory tokenURI, uint256 count) public returns (uint256) {
+        uint256 newItemId;
 
-        _mint(msg.sender, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-        setApprovalForAll(contractAddress, true);
+        for (uint256 index = 0; index < count; index++) {
+            _tokenIds.increment();
+            newItemId = _tokenIds.current();
+
+            _mint(msg.sender, newItemId);
+            _setTokenURI(newItemId, tokenURI);
+            setApprovalForAll(contractAddress, true);
+        }
+
         return newItemId;
     }
 }

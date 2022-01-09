@@ -17,16 +17,17 @@ describe("NFTMarket", function() {
 
     const auctionPrice = ethers.utils.parseUnits('1', 'ether')
 
-    await nft.createToken("https://www.clab.com")
-    await nft.createToken("https://www.clab.com")
+    await nft.createToken("https://www.clab.com", 5)
+    // await nft.createToken("https://www.clab.com")
   
-    await market.createMarketItem(nftContractAddress, creater, 1, auctionPrice, { value: listingPrice })
-    await market.createMarketItem(nftContractAddress, creater, 2, auctionPrice, { value: listingPrice })
+    await market.createMarketItem(nftContractAddress, creater, 1, auctionPrice, 5, { value: listingPrice })
+    // await market.createMarketItem(nftContractAddress, creater, 2, auctionPrice, { value: listingPrice })
     
     const [_, buyerAddress] = await ethers.getSigners()
     // console.log('buyerAddress   = ', buyerAddress)
 
     await market.connect(buyerAddress).createMarketSale(nftContractAddress, 1, { value: auctionPrice})
+    // await market.connect(buyerAddress).createBulkMarketSale(nftContractAddress, 2, 3, { value: auctionPrice})
 
     items = await market.fetchMarketItems()
     items = await Promise.all(items.map(async i => {
